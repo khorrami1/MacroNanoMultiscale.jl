@@ -1,0 +1,18 @@
+units metal
+dimension 3
+boundary p p p
+atom_style atomic
+read_restart alloy.equil
+# Potential
+pair_style eam/alloy
+pair_coeff * * FeNiCrCoAl-heaweight.setfl Fe Ni Cr Co Al
+
+# Settings
+compute eng all pe/atom
+compute eatoms all reduce sum c_eng
+
+# Run
+fix 1 all npt temp 1.0 1.0 1.0 x 0.0 0.0 100 y 0.0 0.0 100 z 0.0 0.0 100 xy 0.0 0.0 100 xz 0.0 0.0 100 yz 0.0 0.0 100
+thermo 1000
+thermo_style custom step temp pxx pyy pzz pxy pxz pyz  
+run 1
