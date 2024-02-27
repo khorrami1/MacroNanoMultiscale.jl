@@ -1,6 +1,12 @@
 LAMMPS (28 Mar 2023 - Update 1)
 OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
   using 1 OpenMP thread(s) per MPI task
+<<<<<<< HEAD
+WARNING: Overriding built-in pair style pace from plugin (src/PLUGIN/plugin.cpp:172)
+Loaded 1 plugins from E:\Applications\LAMMPS ML-PACE Plugin 28Mar2023-MPI
+Loaded 1 plugins from E:\Applications\LAMMPS 64-bit 28Mar2023-MPI\plugins
+=======
+>>>>>>> 4bf26cf8ee71e2271c0c0e0ec0f31afed0bb7388
 package omp 12
 set 12 OpenMP thread(s) per MPI task
 using multi-threaded neighbor list subroutines
@@ -8,6 +14,12 @@ using multi-threaded neighbor list subroutines
 clear 
 OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
   using 1 OpenMP thread(s) per MPI task
+<<<<<<< HEAD
+WARNING: Overriding built-in pair style pace from plugin (src/PLUGIN/plugin.cpp:172)
+Loaded 1 plugins from E:\Applications\LAMMPS ML-PACE Plugin 28Mar2023-MPI
+Loaded 1 plugins from E:\Applications\LAMMPS 64-bit 28Mar2023-MPI\plugins
+=======
+>>>>>>> 4bf26cf8ee71e2271c0c0e0ec0f31afed0bb7388
 package omp 12
 set 12 OpenMP thread(s) per MPI task
 using multi-threaded neighbor list subroutines
@@ -28,6 +40,19 @@ Reading data file ...
   1875 atoms
   reading velocities ...
   1875 velocities
+<<<<<<< HEAD
+  read_data CPU = 0.106 seconds
+#read_restart ARVE_10_relaxed.equil
+pair_style eam/alloy
+pair_coeff * * CuAgAu_Zhou04.eam.alloy Au
+ERROR on proc 0: cannot open eam/alloy potential file CuAgAu_Zhou04.eam.alloy: No such file or directory (src/potential_file_reader.cpp:59)
+Last command: pair_coeff * * CuAgAu_Zhou04.eam.alloy Au
+run 1000
+WARNING: No fixes with time integration, atoms won't move (src/verlet.cpp:60)
+ERROR: All pair coeffs are not set (src/pair.cpp:252)
+Last command: run 1000
+Total wall time: 0:00:00
+=======
   read_data CPU = 0.014 seconds
 #read_restart ARVE_10_relaxed.equil
 pair_style eam/alloy
@@ -970,3 +995,4 @@ Total # of neighbors = 108045
 Ave neighs/atom = 57.624
 Neighbor list builds = 6
 Dangerous builds = 0
+>>>>>>> 4bf26cf8ee71e2271c0c0e0ec0f31afed0bb7388

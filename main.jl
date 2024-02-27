@@ -152,6 +152,100 @@ function apply_C_ARVE!(lmp::LMP, arve::ARVE, F, timestep, strain_rate)
     return deepcopy(get_ARVE_from_lmp(lmp))
 end
 
+function calc_S_C(lmp; eps=1e-5)
+
+    S = zeros(6, 1)
+    C = zeros(6, 6)
+
+    S[0] = lmp.get_thermo("pxx") * 1e-4
+    S[1] = lmp.get_thermo("pyy") * 1e-4
+    S[2] = lmp.get_thermo("pzz") * 1e-4
+    S[3] = lmp.get_thermo("pyz") * 1e-4
+    S[4] = lmp.get_thermo("pxz") * 1e-4
+    S[5] = lmp.get_thermo("pxy") * 1e-4
+
+    xyEps = LAMMPS.API.lammps_get_thermo(lmp, "xy")*eps
+    xzEps = LAMMPS.API.lammps_get_thermo(lmp, "xz")*eps
+    yzEps = LAMMPS.API.lammps_get_thermo(lmp, "yz")*eps
+    lxEps = LAMMPS.API.lammps_get_thermo(lmp, "lx")*eps
+    lyEps = LAMMPS.API.lammps_get_thermo(lmp, "ly")*eps
+    lzEps = LAMMPS.API.lammps_get_thermo(lmp, "lz")*eps
+
+    # voigt_str = ["x", "y", "z", "yz", "xz", "xy"]
+    voigt_str_p = ["pxx", "pyy", "pzz", "pyz", "pxz", "pxy"]
+
+    lmp.command("change_box all x delta 0 " * string(lxEps) * " xy delta " * string(xyEps) * " xz delta " * string(xzEps) * " remap units box")
+    lmp.command("run 0")
+
+    for i in 1:6
+        C[i, 1] = -(lmp.get_thermo(voigt_str_p[i]) * 1e-4 - S[i]) / eps
+    end
+
+    lmp.command("change_box all x delta 0 " * string(-lxEps) * " xy delta " * string(-xyEps) * " xz delta " * string(-xzEps) * " remap units box")
+    lmp.command("run 0")
+
+    lmp.command("change_box all y delta 0 " * string(lyEps) * " yz delta " * str(yzEps) + " remap units box")
+    lmp.command("run 0")
+
+    for i in range(1, 6):
+        C[i][1] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+
+    lmp.command('change_box all y delta 0 ' + string(-eps * lmp.get_thermo('ly')) +
+                ' yz delta ' + string(-eps * lmp.get_thermo('yz')) + ' remap units box')
+    lmp.command('run 0')
+
+    lmp.command('change_box all z delta 0 ' + string(eps * lmp.get_thermo('lz')) +
+                ' remap units box')
+    lmp.command('run 0')
+
+    for i in range(2, 6):
+        C[i][2] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+
+    lmp.command('change_box all z delta 0 ' + string(-eps * lmp.get_thermo('lz')) +
+                ' remap units box')
+    lmp.command('run 0')
+
+    lmp.command('change_box all yz delta ' + string(eps * lmp.get_thermo('lz')) +
+                ' remap units box')
+    lmp.command('run 0')
+
+    for i in range(3, 6):
+        C[i][3] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+
+    lmp.command('change_box all yz delta ' + string(-eps * lmp.get_thermo('lz')) +
+                ' remap units box')
+    lmp.command('run 0')
+
+    lmp.command('change_box all xz delta ' + string(eps * lmp.get_thermo('lz')) +
+                ' remap units box')
+    lmp.command('run 0')
+
+    for i in range(4, 6):
+        C[i][4] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+
+    lmp.command('change_box all xz delta ' + string(-eps * lmp.get_thermo('lz')) +
+                ' remap units box')
+    lmp.command('run 0')
+
+    lmp.command('change_box all xy delta ' + string(eps * lmp.get_thermo('ly')) +
+                ' remap units box')
+    lmp.command('run 0')
+
+    for i in range(5, 6):
+        C[i][5] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+
+    lmp.command('change_box all xy delta ' + string(-eps * lmp.get_thermo('ly')) +
+                ' remap units box')
+    lmp.command('run 0')
+
+    for i in 1:6
+        for j in i+1:6
+            C[i][j] = C[j][i]
+        end
+    end
+
+    return S, C
+end
 
 F = zeros(3,3)
 F[1,1] = F[2,2] = F[3,3] = 1
