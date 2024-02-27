@@ -157,12 +157,12 @@ function calc_S_C(lmp; eps=1e-5)
     S = zeros(6, 1)
     C = zeros(6, 6)
 
-    S[0] = lmp.get_thermo("pxx") * 1e-4
-    S[1] = lmp.get_thermo("pyy") * 1e-4
-    S[2] = lmp.get_thermo("pzz") * 1e-4
-    S[3] = lmp.get_thermo("pyz") * 1e-4
-    S[4] = lmp.get_thermo("pxz") * 1e-4
-    S[5] = lmp.get_thermo("pxy") * 1e-4
+    S[1] = LAMMPS.API.lammps_get_thermo(lmp, "pxx") * 1e-4
+    S[2] = LAMMPS.API.lammps_get_thermo(lmp, "pyy") * 1e-4
+    S[3] = LAMMPS.API.lammps_get_thermo(lmp, "pzz") * 1e-4
+    S[4] = LAMMPS.API.lammps_get_thermo(lmp, "pyz") * 1e-4
+    S[5] = LAMMPS.API.lammps_get_thermo(lmp, "pxz") * 1e-4
+    S[6] = LAMMPS.API.lammps_get_thermo(lmp, "pxy") * 1e-4
 
     xyEps = LAMMPS.API.lammps_get_thermo(lmp, "xy")*eps
     xzEps = LAMMPS.API.lammps_get_thermo(lmp, "xz")*eps
@@ -174,73 +174,77 @@ function calc_S_C(lmp; eps=1e-5)
     # voigt_str = ["x", "y", "z", "yz", "xz", "xy"]
     voigt_str_p = ["pxx", "pyy", "pzz", "pyz", "pxz", "pxy"]
 
-    lmp.command("change_box all x delta 0 " * string(lxEps) * " xy delta " * string(xyEps) * " xz delta " * string(xzEps) * " remap units box")
-    lmp.command("run 0")
+    command(lmp, "change_box all x delta 0 " * string(lxEps) * " xy delta " * string(xyEps) * " xz delta " * string(xzEps) * " remap units box")
+    command(lmp, "run 0")
 
     for i in 1:6
-        C[i, 1] = -(lmp.get_thermo(voigt_str_p[i]) * 1e-4 - S[i]) / eps
+        C[i, 1] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) * 1e-4 - S[i]) / eps
     end
 
-    lmp.command("change_box all x delta 0 " * string(-lxEps) * " xy delta " * string(-xyEps) * " xz delta " * string(-xzEps) * " remap units box")
-    lmp.command("run 0")
+    command(lmp, "change_box all x delta 0 " * string(-lxEps) * " xy delta " * string(-xyEps) * " xz delta " * string(-xzEps) * " remap units box")
+    command(lmp, "run 0")
 
-    lmp.command("change_box all y delta 0 " * string(lyEps) * " yz delta " * str(yzEps) + " remap units box")
-    lmp.command("run 0")
+    command(lmp, "change_box all y delta 0 " * string(lyEps) * " yz delta " * string(yzEps) * " remap units box")
+    command(lmp, "run 0")
 
-    for i in range(1, 6):
-        C[i][1] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+    for i in 2:6
+        C[i, 2] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) / 1e4 - S[i]) / eps
+    end
 
-    lmp.command('change_box all y delta 0 ' + string(-eps * lmp.get_thermo('ly')) +
-                ' yz delta ' + string(-eps * lmp.get_thermo('yz')) + ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all y delta 0 " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "ly")) *
+                " yz delta " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "yz")) * " remap units box")
+    command(lmp, "run 0")
 
-    lmp.command('change_box all z delta 0 ' + string(eps * lmp.get_thermo('lz')) +
-                ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all z delta 0 " * string(eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
+                " remap units box")
+    command(lmp, "run 0")
 
-    for i in range(2, 6):
-        C[i][2] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+    for i in 3:6
+        C[i, 3] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) / 1e4 - S[i]) / eps
+    end
 
-    lmp.command('change_box all z delta 0 ' + string(-eps * lmp.get_thermo('lz')) +
-                ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all z delta 0 " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
+                " remap units box")
+    command(lmp, "run 0")
 
-    lmp.command('change_box all yz delta ' + string(eps * lmp.get_thermo('lz')) +
-                ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all yz delta " * string(eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
+                " remap units box")
+    command(lmp, "run 0")
 
-    for i in range(3, 6):
-        C[i][3] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+    for i in 4:6
+        C[i, 4] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) / 1e4 - S[i]) / eps
+    end
 
-    lmp.command('change_box all yz delta ' + string(-eps * lmp.get_thermo('lz')) +
-                ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all yz delta " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
+                " remap units box")
+    command(lmp, "run 0")
 
-    lmp.command('change_box all xz delta ' + string(eps * lmp.get_thermo('lz')) +
-                ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all xz delta " * string(eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
+                " remap units box")
+    command(lmp, "run 0")
 
-    for i in range(4, 6):
-        C[i][4] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+    for i in 5:6
+        C[i, 5] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) / 1e4 - S[i]) / eps
+    end
 
-    lmp.command('change_box all xz delta ' + string(-eps * lmp.get_thermo('lz')) +
-                ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all xz delta " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
+                " remap units box")
+    command(lmp, "run 0")
 
-    lmp.command('change_box all xy delta ' + string(eps * lmp.get_thermo('ly')) +
-                ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all xy delta " * string(eps * LAMMPS.API.lammps_get_thermo(lmp, "ly")) *
+                " remap units box")
+    command(lmp, "run 0")
 
-    for i in range(5, 6):
-        C[i][5] = -(lmp.get_thermo(voigt_str_p[i]) / 1e4 - S[i]) / eps
+    
+    C[6,6] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[6]) / 1e4 - S[6]) / eps
 
-    lmp.command('change_box all xy delta ' + string(-eps * lmp.get_thermo('ly')) +
-                ' remap units box')
-    lmp.command('run 0')
+    command(lmp, "change_box all xy delta " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "ly")) *
+                " remap units box")
+    command(lmp, "run 0")
 
     for i in 1:6
         for j in i+1:6
-            C[i][j] = C[j][i]
+            C[i, j] = C[j, i]
         end
     end
 
