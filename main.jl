@@ -37,8 +37,8 @@ LAMMPS.API.lammps_commands_string(lmp_ref, test_str)
 command(lmp_ref, "run 1000")
 
 # you can see the atoms in Ovito
-command(lmp_ref, "write_dump all atom ARVE_10_relaxed.atom")
-command(lmp_ref, "write_data ARVE_10_relaxed.data")
+# command(lmp_ref, "write_dump all atom ARVE_10_relaxed.atom")
+# command(lmp_ref, "write_data ARVE_10_relaxed.data")
 
 function get_stress(lmp)
     Pxx = LAMMPS.API.lammps_get_thermo(lmp, "pxx")

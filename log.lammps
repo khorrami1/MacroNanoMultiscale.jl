@@ -1,0 +1,972 @@
+LAMMPS (28 Mar 2023 - Update 1)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+package omp 12
+set 12 OpenMP thread(s) per MPI task
+using multi-threaded neighbor list subroutines
+
+clear 
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+package omp 12
+set 12 OpenMP thread(s) per MPI task
+using multi-threaded neighbor list subroutines
+units metal 
+dimension 3
+boundary p p p 
+atom_style 	atomic
+atom_modify map array sort 0 0
+box tilt large
+
+The 'box' command has been removed and will be ignored
+
+read_data ARVE_10_relaxed.data
+Reading data file ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  1875 atoms
+  reading velocities ...
+  1875 velocities
+  read_data CPU = 0.014 seconds
+#read_restart ARVE_10_relaxed.equil
+pair_style eam/alloy
+pair_coeff * * CuAgAu_Zhou04.eam.alloy Au
+Reading eam/alloy potential file CuAgAu_Zhou04.eam.alloy with DATE: 2018-03-30
+thermo_style custom step pxx pyy pzz pxy pxz pyz
+timestep 0.005
+thermo 1000
+variable Temp equal 1
+#min_style cg
+#fix fix_boxRelax all box/relax aniso 0.0
+#minimize  1.0e-10 1.0e-10 2000 2000
+#write_restart L=80,DR=1_equilibrium.equil
+#unfix fix_boxRelax
+fix fix_nvt all nvt temp ${Temp} ${Temp} 1
+fix fix_nvt all nvt temp 1 ${Temp} 1
+fix fix_nvt all nvt temp 1 1 1
+run 100
+Last active /omp style is pair_style eam/alloy/omp
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 8.4662927
+  ghost atom cutoff = 8.4662927
+  binsize = 4.2331463, bins = 10 10 10
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair eam/alloy/omp, perpetual
+      attributes: half, newton on, omp
+      pair build: half/bin/newton/tri/omp
+      stencil: half/bin/3d/tri
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 13.07 | 13.07 | 13.07 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+         0   256.7113       223.2821       249.28312      20.257372      50.711028     -154.91029    
+       100  -286.26505     -184.20833     -254.25597     -12.784838     -9.6596503     -45.053652    
+Loop time of 0.12992 on 12 procs for 100 steps with 1875 atoms
+
+Performance: 332.512 ns/day, 0.072 hours/ns, 769.704 timesteps/s, 1.443 Matom-step/s
+0.0% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.090619   | 0.090619   | 0.090619   |   0.0 | 69.75
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.000951   | 0.000951   | 0.000951   |   0.0 |  0.73
+Output  | 0.000151   | 0.000151   | 0.000151   |   0.0 |  0.12
+Modify  | 0.037846   | 0.037846   | 0.037846   |   0.0 | 29.13
+Other   |            | 0.000353   |            |       |  0.27
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2710 ave        2710 max        2710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         110510 ave      110510 max      110510 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 110510
+Ave neighs/atom = 58.938667
+Neighbor list builds = 0
+Dangerous builds = 0
+run 1000
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.07 | 13.07 | 13.07 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+       100  -286.26505     -184.20833     -254.25597     -12.784838     -9.6596503     -45.053652    
+      1000  -355.86514     -448.90039     -433.22789      338.10214     -14.039653     -82.227381    
+      1100   291.6026       136.66878      206.92167      212.4544       17.381405     -85.851606    
+Loop time of 1.28917 on 12 procs for 1000 steps with 1875 atoms
+
+Performance: 335.098 ns/day, 0.072 hours/ns, 775.690 timesteps/s, 1.454 Matom-step/s
+10.9% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.90006    | 0.90006    | 0.90006    |   0.0 | 69.82
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009515   | 0.009515   | 0.009515   |   0.0 |  0.74
+Output  | 0.000304   | 0.000304   | 0.000304   |   0.0 |  0.02
+Modify  | 0.37567    | 0.37567    | 0.37567    |   0.0 | 29.14
+Other   |            | 0.003619   |            |       |  0.28
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2710 ave        2710 max        2710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         110511 ave      110511 max      110511 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 110511
+Ave neighs/atom = 58.9392
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 40.40340408740942 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.43852092121753 xy final -0.0076658418272411485 xz final 0.016673408741628645 yz final 0.01662860020082153
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+write_dump all atom dump_tmp.atom
+change_box all x final 0.39659591259080074 40.40340408740942 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.43852092121753 xy final -0.0076658418272411485 xz final 0.016673408741628645 yz final 0.01662860020082153
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.403404 39.775454 40.438521) with tilt (-0.0076658418 0.016673409 0.0166286)
+fix fix_deform all deform 1 x final 0.39659591259080074 40.594511892746 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.007702460649749052 xz final 0.016753055649179196 yz final 0.016549544975874863 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      1100   291.6026       136.66878      206.92167      212.4544       17.381405     -85.851606    
+      2000  -1241.9743     -515.26551     -765.68738      167.14843     -9.9454175     -5.3502983    
+      2056  -1348.7752     -512.64696     -822.48348      273.70688     -2.6854393     -25.500194    
+Loop time of 1.30646 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 316.115 ns/day, 0.076 hours/ns, 731.747 timesteps/s, 1.372 Matom-step/s
+17.9% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89833    | 0.89833    | 0.89833    |   0.0 | 68.76
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009467   | 0.009467   | 0.009467   |   0.0 |  0.72
+Output  | 0.000359   | 0.000359   | 0.000359   |   0.0 |  0.03
+Modify  | 0.39436    | 0.39436    | 0.39436    |   0.0 | 30.19
+Other   |            | 0.003943   |            |       |  0.30
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2710 ave        2710 max        2710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         110495 ave      110495 max      110495 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 110495
+Ave neighs/atom = 58.930667
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 40.594511892746 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.007702460649746001 xz final 0.016753055649182613 yz final 0.016549544975873687
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.594512 39.775454 40.438521) with tilt (-0.0077024606 0.016753056 0.016549545)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.594512 39.775454 40.438521) with tilt (-0.0077024606 0.016753056 0.016549545)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.594512 39.775454 40.438521) with tilt (-0.0077024606 0.016753056 0.016549545)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.594512 39.775454 40.438521) with tilt (-0.0077024606 0.016753056 0.016549545)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.594512 39.775454 40.438521) with tilt (-0.0077024606 0.016753056 0.016549545)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.594512 39.775454 40.438521) with tilt (-0.0077024606 0.016753056 0.016549545)
+fix fix_deform all deform 1 x final 0.39659591259080074 40.78653259753462 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.007739254396051183 xz final 0.016833083020619158 yz final 0.016470865593061414 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      2056  -1353.4781     -516.33637     -826.44985      273.70014     -2.6833172     -25.498419    
+      3000  -2033.4924     -185.74819     -1012.1266      37.224786      43.091326     -43.638574    
+      3012  -2066.1573     -191.65993     -1031.2801      35.696846      36.131402     -50.677814    
+Loop time of 1.24786 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 330.961 ns/day, 0.073 hours/ns, 766.113 timesteps/s, 1.436 Matom-step/s
+27.5% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.8613     | 0.8613     | 0.8613     |   0.0 | 69.02
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009078   | 0.009078   | 0.009078   |   0.0 |  0.73
+Output  | 0.000257   | 0.000257   | 0.000257   |   0.0 |  0.02
+Modify  | 0.37362    | 0.37362    | 0.37362    |   0.0 | 29.94
+Other   |            | 0.003605   |            |       |  0.29
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2710 ave        2710 max        2710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         109886 ave      109886 max      109886 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 109886
+Ave neighs/atom = 58.605867
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 40.78653259753462 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.007739254396049944 xz final 0.016833083020621586 yz final 0.016470865593063877
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.786533 39.775454 40.438521) with tilt (-0.0077392544 0.016833083 0.016470866)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.786533 39.775454 40.438521) with tilt (-0.0077392544 0.016833083 0.016470866)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.786533 39.775454 40.438521) with tilt (-0.0077392544 0.016833083 0.016470866)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.786533 39.775454 40.438521) with tilt (-0.0077392544 0.016833083 0.016470866)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.786533 39.775454 40.438521) with tilt (-0.0077392544 0.016833083 0.016470866)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.786533 39.775454 40.438521) with tilt (-0.0077392544 0.016833083 0.016470866)
+fix fix_deform all deform 1 x final 0.39659591259080074 40.97947056258832 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.007776223901742766 xz final 0.016913492673375247 yz final 0.01639256026556784 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      3012  -2070.8141     -195.32835     -1035.197       35.700889      36.13128      -50.67528     
+      3968  -3455.454      -778.97904     -1894.0477      299.03673      13.188822     -71.11437     
+Loop time of 1.2456 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 331.560 ns/day, 0.072 hours/ns, 767.500 timesteps/s, 1.439 Matom-step/s
+16.3% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.85897    | 0.85897    | 0.85897    |   0.0 | 68.96
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009045   | 0.009045   | 0.009045   |   0.0 |  0.73
+Output  | 0.000153   | 0.000153   | 0.000153   |   0.0 |  0.01
+Modify  | 0.37384    | 0.37384    | 0.37384    |   0.0 | 30.01
+Other   |            | 0.003588   |            |       |  0.29
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2710 ave        2710 max        2710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         109341 ave      109341 max      109341 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 109341
+Ave neighs/atom = 58.3152
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 40.97947056258832 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.007776223901743151 xz final 0.01691349267337472 yz final 0.016392560265565237
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.979471 39.775454 40.438521) with tilt (-0.0077762239 0.016913493 0.01639256)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.979471 39.775454 40.438521) with tilt (-0.0077762239 0.016913493 0.01639256)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.979471 39.775454 40.438521) with tilt (-0.0077762239 0.016913493 0.01639256)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.979471 39.775454 40.438521) with tilt (-0.0077762239 0.016913493 0.01639256)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.979471 39.775454 40.438521) with tilt (-0.0077762239 0.016913493 0.01639256)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (40.979471 39.775454 40.438521) with tilt (-0.0077762239 0.016913493 0.01639256)
+fix fix_deform all deform 1 x final 0.39659591259080074 41.17333016955122 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.007813370006405492 xz final 0.016994286433558253 yz final 0.01631462721506216 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      3968  -3460.0495     -782.61138     -1897.9141      299.02633      13.18959      -71.112076    
+      4000  -3271.8044     -625.76169     -1712.2707      312.73036      19.793246     -86.965664    
+      4924  -4212.897      -564.10394     -2004.2478     -32.228175      56.077213     -152.84289    
+Loop time of 1.27824 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 323.094 ns/day, 0.074 hours/ns, 747.903 timesteps/s, 1.402 Matom-step/s
+14.7% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.88089    | 0.88089    | 0.88089    |   0.0 | 68.91
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009167   | 0.009167   | 0.009167   |   0.0 |  0.72
+Output  | 0.000537   | 0.000537   | 0.000537   |   0.0 |  0.04
+Modify  | 0.38402    | 0.38402    | 0.38402    |   0.0 | 30.04
+Other   |            | 0.003627   |            |       |  0.28
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2710 ave        2710 max        2710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108763 ave      108763 max      108763 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108763
+Ave neighs/atom = 58.006933
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 41.17333016955122 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.00781337000640292 xz final 0.01699428643355816 yz final 0.01631462721505983
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.17333 39.775454 40.438521) with tilt (-0.00781337 0.016994286 0.016314627)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.17333 39.775454 40.438521) with tilt (-0.00781337 0.016994286 0.016314627)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.17333 39.775454 40.438521) with tilt (-0.00781337 0.016994286 0.016314627)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.17333 39.775454 40.438521) with tilt (-0.00781337 0.016994286 0.016314627)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.17333 39.775454 40.438521) with tilt (-0.00781337 0.016994286 0.016314627)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.17333 39.775454 40.438521) with tilt (-0.00781337 0.016994286 0.016314627)
+fix fix_deform all deform 1 x final 0.39659591259080074 41.36811582099806 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.00785069355362722 xz final 0.017075466136007474 yz final 0.01623706467168087 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      4924  -4217.4383     -567.70869     -2008.0656     -32.22236       56.076049     -152.8399     
+      5000  -4607.4674     -901.91753     -2352.0058      93.456254      4.9169182     -67.94354     
+      5880  -5227.735      -674.66374     -2459.2513      50.398005      68.807019     -193.56094    
+Loop time of 1.3016 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 317.295 ns/day, 0.076 hours/ns, 734.479 timesteps/s, 1.377 Matom-step/s
+12.0% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89352    | 0.89352    | 0.89352    |   0.0 | 68.65
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009237   | 0.009237   | 0.009237   |   0.0 |  0.71
+Output  | 0.000338   | 0.000338   | 0.000338   |   0.0 |  0.03
+Modify  | 0.39473    | 0.39473    | 0.39473    |   0.0 | 30.33
+Other   |            | 0.003777   |            |       |  0.29
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2710 ave        2710 max        2710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108271 ave      108271 max      108271 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108271
+Ave neighs/atom = 57.744533
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 41.36811582099806 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.007850693553628219 xz final 0.017075466136006412 yz final 0.01623706467167807
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.368116 39.775454 40.438521) with tilt (-0.0078506936 0.017075466 0.016237065)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.368116 39.775454 40.438521) with tilt (-0.0078506936 0.017075466 0.016237065)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.368116 39.775454 40.438521) with tilt (-0.0078506936 0.017075466 0.016237065)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.368116 39.775454 40.438521) with tilt (-0.0078506936 0.017075466 0.016237065)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.368116 39.775454 40.438521) with tilt (-0.0078506936 0.017075466 0.016237065)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.368116 39.775454 40.438521) with tilt (-0.0078506936 0.017075466 0.016237065)
+fix fix_deform all deform 1 x final 0.39659591259080074 41.56383194053414 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.00788819539103669 xz final 0.017157033624322193 yz final 0.016159870873968644 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      5880  -5232.2147     -678.23713     -2463.0188      50.398595      68.806078     -193.55752    
+      6000  -5442.0995     -784.52871     -2669.6618     -22.842235      41.618766     -166.23098    
+      6836  -6435.4663     -965.01648     -3068.2188     -77.094656      77.603174     -154.60547    
+Loop time of 1.31575 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 313.884 ns/day, 0.076 hours/ns, 726.583 timesteps/s, 1.362 Matom-step/s
+16.6% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.90066    | 0.90066    | 0.90066    |   0.0 | 68.45
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009407   | 0.009407   | 0.009407   |   0.0 |  0.71
+Output  | 0.000303   | 0.000303   | 0.000303   |   0.0 |  0.02
+Modify  | 0.40154    | 0.40154    | 0.40154    |   0.0 | 30.52
+Other   |            | 0.003842   |            |       |  0.29
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2710 ave        2710 max        2710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108392 ave      108392 max      108392 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108392
+Ave neighs/atom = 57.809067
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 41.56383194053414 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.007888195391039687 xz final 0.017157033624322082 yz final 0.016159870873970306
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.563832 39.775454 40.438521) with tilt (-0.0078881954 0.017157034 0.016159871)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.563832 39.775454 40.438521) with tilt (-0.0078881954 0.017157034 0.016159871)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.563832 39.775454 40.438521) with tilt (-0.0078881954 0.017157034 0.016159871)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.563832 39.775454 40.438521) with tilt (-0.0078881954 0.017157034 0.016159871)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.563832 39.775454 40.438521) with tilt (-0.0078881954 0.017157034 0.016159871)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.563832 39.775454 40.438521) with tilt (-0.0078881954 0.017157034 0.016159871)
+fix fix_deform all deform 1 x final 0.39659591259080074 41.760482972895815 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.007925876370303526 xz final 0.0172389907509117 yz final 0.01608304406885007 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      6836  -6439.8798     -968.5545      -3071.9323     -77.088472      77.600686     -154.60245    
+      7000  -6264.5722     -667.066       -2837.8116      107.02224      1.6332163     -241.54455    
+      7792  -7101.5059     -813.01573     -3219.9021     -85.801498      39.934667     -68.501048    
+Loop time of 1.29355 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 319.269 ns/day, 0.075 hours/ns, 739.050 timesteps/s, 1.386 Matom-step/s
+13.3% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89331    | 0.89331    | 0.89331    |   0.0 | 69.06
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009148   | 0.009148   | 0.009148   |   0.0 |  0.71
+Output  | 0.000523   | 0.000523   | 0.000523   |   0.0 |  0.04
+Modify  | 0.38702    | 0.38702    | 0.38702    |   0.0 | 29.92
+Other   |            | 0.003553   |            |       |  0.27
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2708 ave        2708 max        2708 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108337 ave      108337 max      108337 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108337
+Ave neighs/atom = 57.779733
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 41.760482972895815 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.007925876370300955 xz final 0.017238990750911398 yz final 0.016083044068849972
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.760483 39.775454 40.438521) with tilt (-0.0079258764 0.017238991 0.016083044)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.760483 39.775454 40.438521) with tilt (-0.0079258764 0.017238991 0.016083044)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.760483 39.775454 40.438521) with tilt (-0.0079258764 0.017238991 0.016083044)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.760483 39.775454 40.438521) with tilt (-0.0079258764 0.017238991 0.016083044)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.760483 39.775454 40.438521) with tilt (-0.0079258764 0.017238991 0.016083044)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.760483 39.775454 40.438521) with tilt (-0.0079258764 0.017238991 0.016083044)
+fix fix_deform all deform 1 x final 0.39659591259080074 41.9580733840514 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.007963737347159654 xz final 0.017321339377030936 yz final 0.01600658251157305 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      7792  -7105.8658     -816.52701     -3223.5686     -85.793726      39.934899     -68.498589    
+      8000  -7219.9956     -775.57614     -3193.7714     -132.22436      115.915       -236.79315    
+      8748  -8101.9748     -969.65135     -3609.923       70.520785      93.859401     -206.01789    
+Loop time of 1.29182 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 319.697 ns/day, 0.075 hours/ns, 740.040 timesteps/s, 1.388 Matom-step/s
+13.3% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89099    | 0.89099    | 0.89099    |   0.0 | 68.97
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009159   | 0.009159   | 0.009159   |   0.0 |  0.71
+Output  | 0.000309   | 0.000309   | 0.000309   |   0.0 |  0.02
+Modify  | 0.38782    | 0.38782    | 0.38782    |   0.0 | 30.02
+Other   |            | 0.003547   |            |       |  0.27
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2703 ave        2703 max        2703 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108281 ave      108281 max      108281 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108281
+Ave neighs/atom = 57.749867
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 41.9580733840514 y final 1.0245462220599535 39.775453777940434 z final 0.3614790787822244 40.43852092121753 xy final -0.00796373734716127 xz final 0.01732133937703395 yz final 0.016006582511572276
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.958073 39.775454 40.438521) with tilt (-0.0079637373 0.017321339 0.016006583)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.958073 39.775454 40.438521) with tilt (-0.0079637373 0.017321339 0.016006583)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.958073 39.775454 40.438521) with tilt (-0.0079637373 0.017321339 0.016006583)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.958073 39.775454 40.438521) with tilt (-0.0079637373 0.017321339 0.016006583)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.958073 39.775454 40.438521) with tilt (-0.0079637373 0.017321339 0.016006583)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (41.958073 39.775454 40.438521) with tilt (-0.0079637373 0.017321339 0.016006583)
+fix fix_deform all deform 1 x final 0.39659591259080074 42.156607661302644 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.00800177918144214 xz final 0.01740408137283052 yz final 0.015930484465687615 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      8748  -8106.2731     -973.12865     -3613.5377      70.520096      93.856074     -206.01459    
+      9000  -8315.4958     -1034.8717     -3724.7004     -48.802526      14.275124     -203.2106     
+      9704  -9064.1206     -1209.2455     -4077.5189     -137.74644      17.397283     -200.02895    
+Loop time of 1.29253 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 319.522 ns/day, 0.075 hours/ns, 739.635 timesteps/s, 1.387 Matom-step/s
+18.1% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89269    | 0.89269    | 0.89269    |   0.0 | 69.07
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.009093   | 0.009093   | 0.009093   |   0.0 |  0.70
+Output  | 0.00031    | 0.00031    | 0.00031    |   0.0 |  0.02
+Modify  | 0.38684    | 0.38684    | 0.38684    |   0.0 | 29.93
+Other   |            | 0.003595   |            |       |  0.28
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2693 ave        2693 max        2693 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108466 ave      108466 max      108466 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108466
+Ave neighs/atom = 57.848533
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 42.156607661302644 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.008001779181441293 xz final 0.017404081372831115 yz final 0.015930484465684458
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.156608 39.775454 40.438521) with tilt (-0.0080017792 0.017404081 0.015930484)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.156608 39.775454 40.438521) with tilt (-0.0080017792 0.017404081 0.015930484)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.156608 39.775454 40.438521) with tilt (-0.0080017792 0.017404081 0.015930484)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.156608 39.775454 40.438521) with tilt (-0.0080017792 0.017404081 0.015930484)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.156608 39.775454 40.438521) with tilt (-0.0080017792 0.017404081 0.015930484)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.156608 39.775454 40.438521) with tilt (-0.0080017792 0.017404081 0.015930484)
+fix fix_deform all deform 1 x final 0.39659591259080074 42.35609031338659 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.008040002737078899 xz final 0.01748721861738527 yz final 0.015854748202996403 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+      9704  -9068.3623     -1212.6901     -4081.0852     -137.73605      17.398452     -200.0252     
+     10000  -9272.0297     -1261.1934     -4184.0688      8.0563942      130.18834     -158.95598    
+     10660  -9699.9295     -1152.2965     -4202.4026      26.288824      79.495295     -153.75505    
+Loop time of 1.29293 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 319.424 ns/day, 0.075 hours/ns, 739.408 timesteps/s, 1.386 Matom-step/s
+14.5% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89179    | 0.89179    | 0.89179    |   0.0 | 68.97
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.008997   | 0.008997   | 0.008997   |   0.0 |  0.70
+Output  | 0.000296   | 0.000296   | 0.000296   |   0.0 |  0.02
+Modify  | 0.38826    | 0.38826    | 0.38826    |   0.0 | 30.03
+Other   |            | 0.003586   |            |       |  0.28
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2668 ave        2668 max        2668 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108390 ave      108390 max      108390 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108390
+Ave neighs/atom = 57.808
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 42.35609031338659 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.008040002737075724 xz final 0.017487218617382894 yz final 0.01585474820299737
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.35609 39.775454 40.438521) with tilt (-0.0080400027 0.017487219 0.015854748)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.35609 39.775454 40.438521) with tilt (-0.0080400027 0.017487219 0.015854748)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.35609 39.775454 40.438521) with tilt (-0.0080400027 0.017487219 0.015854748)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.35609 39.775454 40.438521) with tilt (-0.0080400027 0.017487219 0.015854748)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.35609 39.775454 40.438521) with tilt (-0.0080400027 0.017487219 0.015854748)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.35609 39.775454 40.438521) with tilt (-0.0080400027 0.017487219 0.015854748)
+fix fix_deform all deform 1 x final 0.39659591259080074 42.55652587057797 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.008078408882131549 xz final 0.017570752998751327 yz final 0.015779372003526367 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     10660  -9704.1225     -1155.7115     -4205.9251      26.290056      79.492704     -153.75194    
+     11000  -10149.231     -1227.655      -4379.4406     -208.37738      96.541663     -344.86026    
+     11616  -10308.497     -999.41014     -4221.3655     -197.85493      101.81048     -185.40079    
+Loop time of 1.291 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 319.902 ns/day, 0.075 hours/ns, 740.514 timesteps/s, 1.388 Matom-step/s
+23.0% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89161    | 0.89161    | 0.89161    |   0.0 | 69.06
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00887    | 0.00887    | 0.00887    |   0.0 |  0.69
+Output  | 0.000302   | 0.000302   | 0.000302   |   0.0 |  0.02
+Modify  | 0.3866     | 0.3866     | 0.3866     |   0.0 | 29.95
+Other   |            | 0.00362    |            |       |  0.28
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2609 ave        2609 max        2609 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108587 ave      108587 max      108587 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108587
+Ave neighs/atom = 57.913067
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 42.55652587057797 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.43852092121753 xy final -0.008078408882134624 xz final 0.01757075299875055 yz final 0.015779372003528636
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.556526 39.775454 40.438521) with tilt (-0.0080784089 0.017570753 0.015779372)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.556526 39.775454 40.438521) with tilt (-0.0080784089 0.017570753 0.015779372)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.556526 39.775454 40.438521) with tilt (-0.0080784089 0.017570753 0.015779372)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.556526 39.775454 40.438521) with tilt (-0.0080784089 0.017570753 0.015779372)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.556526 39.775454 40.438521) with tilt (-0.0080784089 0.017570753 0.015779372)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.556526 39.775454 40.438521) with tilt (-0.0080784089 0.017570753 0.015779372)
+fix fix_deform all deform 1 x final 0.39659591259080074 42.75791888479215 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.43852092121753 xy final -0.008116998488816819 xz final 0.017654686414009003 yz final 0.015704354155472215 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     11616  -10312.645     -1002.7961     -4224.844      -197.84191      101.80669     -185.39744    
+     12000  -10860.721     -1428.4719     -4592.6277     -7.1515542      119.5671      -279.69273    
+     12572  -11291.211     -1323.6944     -4686.5251      0.13907788     86.070983     -195.49382    
+Loop time of 1.2914 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 319.801 ns/day, 0.075 hours/ns, 740.280 timesteps/s, 1.388 Matom-step/s
+19.4% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89056    | 0.89056    | 0.89056    |   0.0 | 68.96
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.008647   | 0.008647   | 0.008647   |   0.0 |  0.67
+Output  | 0.000295   | 0.000295   | 0.000295   |   0.0 |  0.02
+Modify  | 0.38827    | 0.38827    | 0.38827    |   0.0 | 30.07
+Other   |            | 0.003631   |            |       |  0.28
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2535 ave        2535 max        2535 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108735 ave      108735 max      108735 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108735
+Ave neighs/atom = 57.992
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 42.75791888479215 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.43852092121753 xy final -0.008116998488816307 xz final 0.017654686414012133 yz final 0.01570435415547422
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.757919 39.775454 40.438521) with tilt (-0.0081169985 0.017654686 0.015704354)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.757919 39.775454 40.438521) with tilt (-0.0081169985 0.017654686 0.015704354)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.757919 39.775454 40.438521) with tilt (-0.0081169985 0.017654686 0.015704354)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.757919 39.775454 40.438521) with tilt (-0.0081169985 0.017654686 0.015704354)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.757919 39.775454 40.438521) with tilt (-0.0081169985 0.017654686 0.015704354)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.757919 39.775454 40.438521) with tilt (-0.0081169985 0.017654686 0.015704354)
+fix fix_deform all deform 1 x final 0.39659591259080074 42.96027392968841 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.008155772433499412 xz final 0.01773902076929847 yz final 0.015629692955168147 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     12572  -11295.31      -1327.0456     -4689.9555      0.1418271      86.068432     -195.49047    
+     13000  -11563.674     -1311.4411     -4737.0092     -98.164722      130.84815     -160.474      
+     13528  -11952.271     -1342.8055     -4805.5344     -195.14607      165.59633     -158.18845    
+Loop time of 1.28537 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 321.301 ns/day, 0.075 hours/ns, 743.752 timesteps/s, 1.395 Matom-step/s
+19.4% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.88831    | 0.88831    | 0.88831    |   0.0 | 69.11
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.008677   | 0.008677   | 0.008677   |   0.0 |  0.68
+Output  | 0.000335   | 0.000335   | 0.000335   |   0.0 |  0.03
+Modify  | 0.38447    | 0.38447    | 0.38447    |   0.0 | 29.91
+Other   |            | 0.003577   |            |       |  0.28
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2438 ave        2438 max        2438 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108670 ave      108670 max      108670 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108670
+Ave neighs/atom = 57.957333
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 42.96027392968841 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.008155772433497077 xz final 0.01773902076929801 yz final 0.015629692955165808
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.960274 39.775454 40.438521) with tilt (-0.0081557724 0.017739021 0.015629693)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.960274 39.775454 40.438521) with tilt (-0.0081557724 0.017739021 0.015629693)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.960274 39.775454 40.438521) with tilt (-0.0081557724 0.017739021 0.015629693)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.960274 39.775454 40.438521) with tilt (-0.0081557724 0.017739021 0.015629693)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.960274 39.775454 40.438521) with tilt (-0.0081557724 0.017739021 0.015629693)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (42.960274 39.775454 40.438521) with tilt (-0.0081557724 0.017739021 0.015629693)
+fix fix_deform all deform 1 x final 0.39659591259080074 43.1635956007739 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.008194731596741977 xz final 0.017823757979855442 yz final 0.01555538670704536 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     13528  -11956.331     -1346.1278     -4808.9227     -195.13236      165.58959     -158.18589    
+     14000  -11888.797     -1266.5839     -4618.1148     -63.746132      212.32012     -127.89301    
+     14484  -11606.869     -1240.9524     -4509.1604     -37.754304      655.63149     -68.231767    
+Loop time of 1.30897 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 315.509 ns/day, 0.076 hours/ns, 730.345 timesteps/s, 1.369 Matom-step/s
+25.1% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.90261    | 0.90261    | 0.90261    |   0.0 | 68.96
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.008768   | 0.008768   | 0.008768   |   0.0 |  0.67
+Output  | 0.000335   | 0.000335   | 0.000335   |   0.0 |  0.03
+Modify  | 0.39335    | 0.39335    | 0.39335    |   0.0 | 30.05
+Other   |            | 0.003904   |            |       |  0.30
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2422 ave        2422 max        2422 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108727 ave      108727 max      108727 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108727
+Ave neighs/atom = 57.987733
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 43.1635956007739 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.008194731596745441 xz final 0.017823757979854804 yz final 0.015555386707042373
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.163596 39.775454 40.438521) with tilt (-0.0081947316 0.017823758 0.015555387)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.163596 39.775454 40.438521) with tilt (-0.0081947316 0.017823758 0.015555387)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.163596 39.775454 40.438521) with tilt (-0.0081947316 0.017823758 0.015555387)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.163596 39.775454 40.438521) with tilt (-0.0081947316 0.017823758 0.015555387)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.163596 39.775454 40.438521) with tilt (-0.0081947316 0.017823758 0.015555387)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.163596 39.775454 40.438521) with tilt (-0.0081947316 0.017823758 0.015555387)
+fix fix_deform all deform 1 x final 0.39659591259080074 43.36788851550793 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.008233876863319398 xz final 0.01790889997007547 yz final 0.015481433723603825 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     14484  -11610.933     -1244.2528     -4512.5356     -37.746014      655.59821     -68.233663    
+     15000  -11988.464     -1205.0001     -4545.7016     -216.95327      608.3049      -107.73352    
+     15440  -11427.308     -1215.3557     -4264.4316     -269.821        429.62128     -24.69334     
+Loop time of 1.28199 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 322.148 ns/day, 0.074 hours/ns, 745.713 timesteps/s, 1.398 Matom-step/s
+14.6% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.88561    | 0.88561    | 0.88561    |   0.0 | 69.08
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.008431   | 0.008431   | 0.008431   |   0.0 |  0.66
+Output  | 0.000306   | 0.000306   | 0.000306   |   0.0 |  0.02
+Modify  | 0.38394    | 0.38394    | 0.38394    |   0.0 | 29.95
+Other   |            | 0.003706   |            |       |  0.29
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2420 ave        2420 max        2420 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         109254 ave      109254 max      109254 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 109254
+Ave neighs/atom = 58.2688
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 43.36788851550793 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.00823387686332211 xz final 0.017908899970073833 yz final 0.015481433723600446
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.367889 39.775454 40.438521) with tilt (-0.0082338769 0.0179089 0.015481434)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.367889 39.775454 40.438521) with tilt (-0.0082338769 0.0179089 0.015481434)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.367889 39.775454 40.438521) with tilt (-0.0082338769 0.0179089 0.015481434)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.367889 39.775454 40.438521) with tilt (-0.0082338769 0.0179089 0.015481434)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.367889 39.775454 40.438521) with tilt (-0.0082338769 0.0179089 0.015481434)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.367889 39.775454 40.438521) with tilt (-0.0082338769 0.0179089 0.015481434)
+fix fix_deform all deform 1 x final 0.39659591259080074 43.573157313406895 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.008273209122218773 xz final 0.01799444867354244 yz final 0.015407832325362743 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     15440  -11431.373     -1218.6313     -4267.7897     -269.80169      429.59888     -24.698526    
+     16000  -12007.534     -1188.9888     -4357.7129     -188.79101      575.08789     -39.2962      
+     16396  -12053.845     -1251.5033     -4447.1655      3.7100824      531.41783     -108.23611    
+Loop time of 1.29851 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 318.051 ns/day, 0.075 hours/ns, 736.228 timesteps/s, 1.380 Matom-step/s
+19.3% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.89504    | 0.89504    | 0.89504    |   0.0 | 68.93
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.008431   | 0.008431   | 0.008431   |   0.0 |  0.65
+Output  | 0.000302   | 0.000302   | 0.000302   |   0.0 |  0.02
+Modify  | 0.391      | 0.391      | 0.391      |   0.0 | 30.11
+Other   |            | 0.003735   |            |       |  0.29
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2418 ave        2418 max        2418 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         109219 ave      109219 max      109219 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 109219
+Ave neighs/atom = 58.250133
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 43.573157313406895 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.008273209122215519 xz final 0.01799444867354083 yz final 0.015407832325365689
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.573157 39.775454 40.438521) with tilt (-0.0082732091 0.017994449 0.015407832)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.573157 39.775454 40.438521) with tilt (-0.0082732091 0.017994449 0.015407832)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.573157 39.775454 40.438521) with tilt (-0.0082732091 0.017994449 0.015407832)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.573157 39.775454 40.438521) with tilt (-0.0082732091 0.017994449 0.015407832)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.573157 39.775454 40.438521) with tilt (-0.0082732091 0.017994449 0.015407832)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.573157 39.775454 40.438521) with tilt (-0.0082732091 0.017994449 0.015407832)
+fix fix_deform all deform 1 x final 0.39659591259080074 43.779406656149604 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.00831272926667514 xz final 0.018080406033078616 yz final 0.015334580840832304 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     16396  -12057.874     -1254.7516     -4450.4847      3.7155068      531.39058     -108.24125    
+     17000  -12241.97      -1155.6842     -4424.587      -13.636087      549.67588     -96.28783     
+     17352  -12732.734     -1246.7837     -4569.78       -155.12629      558.52027     -210.91296    
+Loop time of 1.27792 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 323.174 ns/day, 0.074 hours/ns, 748.088 timesteps/s, 1.403 Matom-step/s
+18.3% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.88244    | 0.88244    | 0.88244    |   0.0 | 69.05
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.008266   | 0.008266   | 0.008266   |   0.0 |  0.65
+Output  | 0.000305   | 0.000305   | 0.000305   |   0.0 |  0.02
+Modify  | 0.38332    | 0.38332    | 0.38332    |   0.0 | 30.00
+Other   |            | 0.003598   |            |       |  0.28
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2418 ave        2418 max        2418 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         109479 ave      109479 max      109479 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 109479
+Ave neighs/atom = 58.3888
+Neighbor list builds = 0
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 43.779406656149604 y final 1.0245462220599535 39.77545377794042 z final 0.3614790787822244 40.438520921217524 xy final -0.008312729266677366 xz final 0.01808040603307859 yz final 0.015334580840828949
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.779407 39.775454 40.438521) with tilt (-0.0083127293 0.018080406 0.015334581)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.779407 39.775454 40.438521) with tilt (-0.0083127293 0.018080406 0.015334581)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.779407 39.775454 40.438521) with tilt (-0.0083127293 0.018080406 0.015334581)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.779407 39.775454 40.438521) with tilt (-0.0083127293 0.018080406 0.015334581)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.779407 39.775454 40.438521) with tilt (-0.0083127293 0.018080406 0.015334581)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.779407 39.775454 40.438521) with tilt (-0.0083127293 0.018080406 0.015334581)
+fix fix_deform all deform 1 x final 0.39659591259080074 43.986641227683165 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.438520921217524 xy final -0.00835243819420715 xz final 0.018166774000787412 yz final 0.015261677606449984 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     17352  -12736.727     -1250.0038     -4573.0603     -155.11315      558.49115     -210.91749    
+     18000  -11627.249     -1243.7229     -4275.9723     -103.41511      614.37202     -168.54182    
+     18308  -10795.768     -1082.8883     -4044.5664     -192.43241      483.9612      -222.24938    
+Loop time of 1.26687 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 325.995 ns/day, 0.074 hours/ns, 754.618 timesteps/s, 1.415 Matom-step/s
+16.0% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.87573    | 0.87573    | 0.87573    |   0.0 | 69.13
+Neigh   | 0.000459   | 0.000459   | 0.000459   |   0.0 |  0.04
+Comm    | 0.00844    | 0.00844    | 0.00844    |   0.0 |  0.67
+Output  | 0.00032    | 0.00032    | 0.00032    |   0.0 |  0.03
+Modify  | 0.37814    | 0.37814    | 0.37814    |   0.0 | 29.85
+Other   |            | 0.003783   |            |       |  0.30
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2408 ave        2408 max        2408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         109386 ave      109386 max      109386 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 109386
+Ave neighs/atom = 58.3392
+Neighbor list builds = 1
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 43.986641227683165 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.438520921217524 xy final -0.00835243819420839 xz final 0.018166774000789587 yz final 0.015261677606453361
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.986641 39.775454 40.438521) with tilt (-0.0083524382 0.018166774 0.015261678)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.986641 39.775454 40.438521) with tilt (-0.0083524382 0.018166774 0.015261678)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.986641 39.775454 40.438521) with tilt (-0.0083524382 0.018166774 0.015261678)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.986641 39.775454 40.438521) with tilt (-0.0083524382 0.018166774 0.015261678)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.986641 39.775454 40.438521) with tilt (-0.0083524382 0.018166774 0.015261678)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (43.986641 39.775454 40.438521) with tilt (-0.0083524382 0.018166774 0.015261678)
+fix fix_deform all deform 1 x final 0.39659591259080074 44.19486573432934 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.438520921217524 xy final -0.008392336806602799 xz final 0.01825355453809628 yz final 0.015189120966587661 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     18308  -10799.814     -1086.1188     -4047.8674     -192.41563      483.93993     -222.2518     
+     19000  -10236.16      -1152.043      -3705.1075     -504.75048      470.87835      93.516504    
+     19264  -9888.1685     -1229.3559     -3770.0529     -207.83593      332.59871     -28.61309     
+Loop time of 1.2559 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 328.841 ns/day, 0.073 hours/ns, 761.207 timesteps/s, 1.427 Matom-step/s
+16.2% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.86718    | 0.86718    | 0.86718    |   0.0 | 69.05
+Neigh   | 0.002324   | 0.002324   | 0.002324   |   0.0 |  0.19
+Comm    | 0.008763   | 0.008763   | 0.008763   |   0.0 |  0.70
+Output  | 0.000299   | 0.000299   | 0.000299   |   0.0 |  0.02
+Modify  | 0.37283    | 0.37283    | 0.37283    |   0.0 | 29.69
+Other   |            | 0.004507   |            |       |  0.36
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2378 ave        2378 max        2378 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108683 ave      108683 max      108683 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108683
+Ave neighs/atom = 57.964267
+Neighbor list builds = 5
+Dangerous builds = 0
+change_box all x final 0.39659591259080074 44.19486573432934 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.438520921217524 xy final -0.008392336806601008 xz final 0.018253554538098626 yz final 0.015189120966589087
+Changing box ...
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (44.194866 39.775454 40.438521) with tilt (-0.0083923368 0.018253555 0.015189121)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (44.194866 39.775454 40.438521) with tilt (-0.0083923368 0.018253555 0.015189121)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (44.194866 39.775454 40.438521) with tilt (-0.0083923368 0.018253555 0.015189121)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (44.194866 39.775454 40.438521) with tilt (-0.0083923368 0.018253555 0.015189121)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (44.194866 39.775454 40.438521) with tilt (-0.0083923368 0.018253555 0.015189121)
+  triclinic box = (0.39659591 1.0245462 0.36147908) to (44.194866 39.775454 40.438521) with tilt (-0.0083923368 0.018253555 0.015189121)
+fix fix_deform all deform 1 x final 0.39659591259080074 44.40408490489142 y final 1.0245462220599535 39.77545377794043 z final 0.3614790787822244 40.438520921217524 xy final -0.008432426009962262 xz final 0.018340749615799512 yz final 0.015116909273466747 remap x units box
+run 956
+Last active /omp style is pair_style eam/alloy/omp
+Per MPI rank memory allocation (min/avg/max) = 13.08 | 13.08 | 13.08 Mbytes
+   Step          Pxx            Pyy            Pzz            Pxy            Pxz            Pyz      
+     19264  -9892.2308     -1232.5799     -3773.3711     -207.80206      332.58176     -28.615957    
+     20000  -9942.2863     -2089.4236     -4460.789      -81.210396     -28.169178      169.68143    
+     20220  -9337.3814     -2728.0519     -4769.6863      0.63962165     61.154578     -11.45892     
+Loop time of 1.26519 on 12 procs for 956 steps with 1875 atoms
+
+Performance: 326.426 ns/day, 0.074 hours/ns, 755.617 timesteps/s, 1.417 Matom-step/s
+17.3% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.8732     | 0.8732     | 0.8732     |   0.0 | 69.02
+Neigh   | 0.002751   | 0.002751   | 0.002751   |   0.0 |  0.22
+Comm    | 0.008851   | 0.008851   | 0.008851   |   0.0 |  0.70
+Output  | 0.000319   | 0.000319   | 0.000319   |   0.0 |  0.03
+Modify  | 0.3754     | 0.3754     | 0.3754     |   0.0 | 29.67
+Other   |            | 0.004673   |            |       |  0.37
+
+Nlocal:           1875 ave        1875 max        1875 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           2378 ave        2378 max        2378 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         108045 ave      108045 max      108045 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 108045
+Ave neighs/atom = 57.624
+Neighbor list builds = 6
+Dangerous builds = 0
