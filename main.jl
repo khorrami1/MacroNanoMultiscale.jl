@@ -304,3 +304,58 @@ for cell in 1:nCell
         @show get_stress(lmp_ref)*1e-4
     end
 end
+
+# FEM implementation, using Ferrite.jl package
+using Ferrite
+using FerriteAssembly
+
+# Generate a grid
+N = 1
+L = 1.0
+left = zero(Vec{3})
+right = L * ones(Vec{3})
+grid = generate_grid(Tetrahedron, (N, N, 1), left, right)
+
+# Finite element base
+ip = Lagrange{RefTetrahedron, 1}()^3
+qr = QuadratureRule{3, RefTetrahedron}(1)
+qr_face = QuadratureRule{2, RefTetrahedron}(1)
+cv = CellValues(qr, ip)
+fv = FaceValues(qr_face, ip)
+# DofHandler
+dh = DofHandler(grid)
+add!(dh, :u, 3) # Add a displacement field
+close!(dh)
+
+
+# Base.@kwdef struct ARVEmat{T} 
+
+# end
+
+LAMMPS.API.lammps_commands_string(lmp_ref, test_str)
+command(lmp_ref, "run 1000")
+
+function get_stress_gpa(lmp::LMP)
+    return get_stress(lmp)*1e-4
+end
+
+arve_ref = get_ARVE_from_lmp(lmp_ref)
+
+function FerriteAssembly.create_cell_state(::ARVE, cv::CellValues, args...)
+    return [arve_ref for _ in 1:getnquadpoints(cv)]
+end
+
+
+function FerriteAssembly.element_residual!(re, state, ue, m::ARVE, cv::CellValues, buffer)
+    Δt = FerriteAssembly.get_time_increment(buffer)
+    old_states = FerriteAssembly.get_old_state(buffer)
+    for q in 1:getnquadpoints(cv)
+        old_state = old_states[q]
+        dΩ = getdetJdV(cv, q)
+        ∇u = function_gradient(cv, q, ue)
+        F = one(∇u) + ∇u # F is a Tensor
+        set_ARVE_to_lmp!(lmp_ref, old_state)
+        state[q] = apply_C_ARVE!(lmp_ref, old_state, Array(F), timestep, strain_rate)
+        S, C = calc_S_C(lmp_ref)
+    end
+end
