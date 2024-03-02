@@ -106,8 +106,8 @@ end
 
 set_ARVE_to_lmp!(lmp_ref, arve_new)
 
-function apply_C_ARVE!(lmp::LMP, arve::ARVE, F, timestep, strain_rate)
-    C = transpose(F)*F
+function apply_C_ARVE!(lmp::LMP, arve::ARVE, F::Tensor{2,3}, timestep, strain_rate)
+    C = transpose(F)⋅F
     detF = sqrt(det(C))
     invC = inv(C)
 
@@ -125,18 +125,18 @@ function apply_C_ARVE!(lmp::LMP, arve::ARVE, F, timestep, strain_rate)
     lx = LAMMPS.API.lammps_get_thermo(lmp, "lx")
     ly = LAMMPS.API.lammps_get_thermo(lmp, "ly")
     lz = LAMMPS.API.lammps_get_thermo(lmp, "lz")
-    a = lx*[1.0,0.0,0.0]
-    b = xy*[1.0,0.0,0.0] + ly*[0.0,1.0,0.0]
-    c = xz*[1.0,0.0,0.0] + yz*[0.0,1.0,0.0] + lz*[0.0,0.0,1.0]
+    a = lx*Tensor{1,3}((1.0,0.0,0.0))
+    b = xy*Tensor{1,3}((1.0,0.0,0.0)) + ly*Tensor{1,3}((0.0,1.0,0.0))
+    c = xz*Tensor{1,3}((1.0,0.0,0.0)) + yz*Tensor{1,3}((0.0,1.0,0.0)) + lz*Tensor{1,3}((0.0,0.0,1.0))
     corss_a_b = cross(a,b)
-    dot_a_Ca = dot(a, C*a)
-    temp_var = sqrt(dot(corss_a_b, invC*corss_a_b))
+    dot_a_Ca = dot(a, C⋅a)
+    temp_var = sqrt(dot(corss_a_b, invC ⋅ corss_a_b))
     lx_new = sqrt(dot_a_Ca)
     ly_new = detF * temp_var/sqrt(dot_a_Ca)
     lz_new = dot(corss_a_b, c)/temp_var
-    xy_new =  dot(a, C*b)/sqrt(dot_a_Ca)
-    xz_new =  dot(a, C*c)/sqrt(dot_a_Ca)
-    yz_new =  dot(corss_a_b, invC*cross(a,c))/(temp_var*sqrt(dot_a_Ca))
+    xy_new =  dot(a, C⋅b)/sqrt(dot_a_Ca)
+    xz_new =  dot(a, C⋅c)/sqrt(dot_a_Ca)
+    yz_new =  dot(corss_a_b, invC ⋅ cross(a,c))/(temp_var*sqrt(dot_a_Ca))
     xhi_new = xlo + lx_new
     yhi_new = ylo + ly_new
     zhi_new = zlo + lz_new
@@ -146,7 +146,7 @@ function apply_C_ARVE!(lmp::LMP, arve::ARVE, F, timestep, strain_rate)
         " xz final "*string(xz_new)*" yz final "*string(yz_new)*" remap x units box")
     #delta = [lx_new - lx, ly_new - ly, lz_new - lz, xy_new - xy, xz_new - xz, yz_new - yz]
     # num_MD_steps = Int(ceil(maximum(delta) / (epsilon_rate * timestep)))
-    num_MD_steps = Int(ceil(maximum(abs.(F - I)) / (strain_rate * timestep)))
+    num_MD_steps = Int(ceil(maximum(abs.(F - one(Tensor{2,3}))) / (strain_rate * timestep)))
     command(lmp, "run "*string(num_MD_steps))
 
     return deepcopy(get_ARVE_from_lmp(lmp))
@@ -154,7 +154,7 @@ end
 
 function calc_S_C(lmp; eps=1e-5)
 
-    S = zeros(6, 1)
+    S = zeros(6)
     C = zeros(6, 6)
 
     S[1] = LAMMPS.API.lammps_get_thermo(lmp, "pxx") * 1e-4
@@ -188,7 +188,7 @@ function calc_S_C(lmp; eps=1e-5)
     command(lmp, "run 0")
 
     for i in 2:6
-        C[i, 2] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) / 1e4 - S[i]) / eps
+        C[i, 2] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) * 1e-4 - S[i]) / eps
     end
 
     command(lmp, "change_box all y delta 0 " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "ly")) *
@@ -200,7 +200,7 @@ function calc_S_C(lmp; eps=1e-5)
     command(lmp, "run 0")
 
     for i in 3:6
-        C[i, 3] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) / 1e4 - S[i]) / eps
+        C[i, 3] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) * 1e-4 - S[i]) / eps
     end
 
     command(lmp, "change_box all z delta 0 " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
@@ -212,7 +212,7 @@ function calc_S_C(lmp; eps=1e-5)
     command(lmp, "run 0")
 
     for i in 4:6
-        C[i, 4] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) / 1e4 - S[i]) / eps
+        C[i, 4] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) * 1e-4 - S[i]) / eps
     end
 
     command(lmp, "change_box all yz delta " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
@@ -224,7 +224,7 @@ function calc_S_C(lmp; eps=1e-5)
     command(lmp, "run 0")
 
     for i in 5:6
-        C[i, 5] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) / 1e4 - S[i]) / eps
+        C[i, 5] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[i]) * 1e-4 - S[i]) / eps
     end
 
     command(lmp, "change_box all xz delta " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "lz")) *
@@ -236,7 +236,7 @@ function calc_S_C(lmp; eps=1e-5)
     command(lmp, "run 0")
 
     
-    C[6,6] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[6]) / 1e4 - S[6]) / eps
+    C[6,6] = -(LAMMPS.API.lammps_get_thermo(lmp, voigt_str_p[6]) * 1e-4 - S[6]) / eps
 
     command(lmp, "change_box all xy delta " * string(-eps * LAMMPS.API.lammps_get_thermo(lmp, "ly")) *
                 " remap units box")
@@ -341,21 +341,52 @@ end
 
 arve_ref = get_ARVE_from_lmp(lmp_ref)
 
+ARVE_State = Union{Tensor{2,3}, ARVE}
+
+
 function FerriteAssembly.create_cell_state(::ARVE, cv::CellValues, args...)
-    return [arve_ref for _ in 1:getnquadpoints(cv)]
+    cell_state_qp = Vector{ARVE_State}(undef, 2)
+    cell_state_qp[1] = one(Tensor{2,3})
+    cell_state_qp[2] = arve_ref
+    return [cell_state_qp for _ in 1:getnquadpoints(cv)]
 end
 
 
 function FerriteAssembly.element_residual!(re, state, ue, m::ARVE, cv::CellValues, buffer)
     Δt = FerriteAssembly.get_time_increment(buffer)
     old_states = FerriteAssembly.get_old_state(buffer)
-    for q in 1:getnquadpoints(cv)
-        old_state = old_states[q]
-        dΩ = getdetJdV(cv, q)
-        ∇u = function_gradient(cv, q, ue)
+    ndofs = getnbasefunctions(cv)
+    for qp in 1:getnquadpoints(cv)
+        old_state = old_states[qp]
+        dΩ = getdetJdV(cv, qp)
+        ∇u = function_gradient(cv, qp, ue)
         F = one(∇u) + ∇u # F is a Tensor
-        set_ARVE_to_lmp!(lmp_ref, old_state)
-        state[q] = apply_C_ARVE!(lmp_ref, old_state, Array(F), timestep, strain_rate)
-        S, C = calc_S_C(lmp_ref)
+        set_ARVE_to_lmp!(lmp_ref, old_state[2])
+        state[q][2] = apply_C_ARVE!(lmp_ref, old_state[2], F, timestep, strain_rate)
+        # σ_voigt, C_voigt = calc_S_C(lmp_ref)
+        σ_voigt = get_stress_gpa(lmp_ref)
+        σ = fromvoigt(SymmetricTensor{2,3}, σ_voigt)
+        P = det(F) * σ ⋅ transpose(inv(F))
+        # Calculation ∂P∂F
+        # C = fromvoigt(SymmetricTensor{4,3}, C_voigt)
+        # Loop over test function
+        for i in 1:ndofs
+            ∇δui = shape_gradient(cv, qp, i)
+            re[i] += (∇δui ⊡ P) * dΩ
+            # ∇δui∂P∂F = ∇δui ⊡ ∂P∂F
+            # for j in 1:ndofs
+            #     ∇δuj = shape_gradient(cv, qp, j)
+            #     ke[i, j] += (∇δui∂P∂F ⊡ ∇δuj) * dΩ
+            # end
+        end
     end
 end
+
+residual = zeros(ndofs(dh))
+u = zeros(ndofs(dh))
+reAssembler = ReAssembler(residual)
+
+# threading=true causes an error! because of multi-threading in LAMMPS
+buffer = setup_domainbuffer(DomainSpec(dh, arve_ref, cv); threading=false)
+
+work!(reAssembler, buffer; a=u)
