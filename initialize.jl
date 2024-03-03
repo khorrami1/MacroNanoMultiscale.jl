@@ -3,7 +3,7 @@ using LinearAlgebra
 using Ferrite
 using FerriteAssembly
 
-lmp_ref = LMP(["-pk","omp", "12", "-sf", "omp"])
+lmp_ref = LMP(["-pk","omp", "12", "-sf", "omp", "-screen", "none", "-log", "none"])
 
 test_str = "
 clear 

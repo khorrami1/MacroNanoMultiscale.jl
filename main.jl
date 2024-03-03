@@ -107,7 +107,7 @@ end
 
 r = zeros(ndofs(dh))
 u = zeros(ndofs(dh))
-reAssembler = ReAssembler(r)
+# reAssembler = ReAssembler(r)
 
 # it must be before setup_domainbuffer
 FerriteAssembly.allocate_cell_cache(::Any, ::Any) = lmp_ref
@@ -115,13 +115,11 @@ FerriteAssembly.allocate_cell_cache(::Any, ::Any) = lmp_ref
 buffer = setup_domainbuffer(DomainSpec(dh, nothing, cv); threading=false)
 
 
-work!(reAssembler, buffer; a=u)
+# work!(reAssembler, buffer; a=u)
 
 K = create_sparsity_pattern(dh)
 assembler = start_assemble(K, r)
  
-work!(assembler, buffer; a=u)
-
 ch = ConstraintHandler(dh)
 
 dbc1 = Dirichlet(:u, getfaceset(grid, "left" ), (x,t)->[0.,0.,0.], [1,2,3])
@@ -141,17 +139,34 @@ preDofs = ch.prescribed_dofs
 
 # u[freeDofs] .= -K[freeDofs, freeDofs]\r[freeDofs] # Singularity
 
-u[freeDofs] .= -K[preDofs, freeDofs]\r[preDofs]
-
-work!(assembler, buffer; a=u)
-norm(r)
+# u[freeDofs] .= -K[preDofs, freeDofs]\r[preDofs]
 
 du = zeros(ndofs(dh))
 
 itr = 0
-while itr < 10 && norm(r) > 1e-3
-    itr += 1
+# work!(assembler, buffer; a=u)
+# @show norm(r[freeDofs])
+
+while true 
+    @show itr += 1
+
+    if itr > 5
+        break
+    end
+    
+    # du[freeDofs] .= K[preDofs, freeDofs]\r[preDofs]
+    # u[freeDofs] .+= du[freeDofs]
+
     work!(assembler, buffer; a=u)
-    du[freeDofs] .= -K[preDofs, freeDofs]\r[preDofs]
-    u .+= du
+
+    @show norm_r = norm(r[freeDofs])
+
+    if norm_r < 1e-3
+        break
+    end
+
+    apply_zero!(K, r, ch)
+    du = Symmetric(K) \ r
+    u -= du
+
 end
