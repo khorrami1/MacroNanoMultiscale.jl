@@ -7,7 +7,7 @@ include("initialize.jl")
 
 # Generate a grid
 N = 2
-L = 1.0
+L = 10.0
 left = zero(Vec{3})
 right = L * ones(Vec{3})
 grid = generate_grid(Tetrahedron, (N, N, 1), left, right)
@@ -147,17 +147,20 @@ itr = 0
 # work!(assembler, buffer; a=u)
 # @show norm(r[freeDofs])
 
+u0 = zeros(ndofs(dh))
+
 while true 
     @show itr += 1
 
-    if itr > 5
+    if itr > 10
         break
     end
     
     # du[freeDofs] .= K[preDofs, freeDofs]\r[preDofs]
     # u[freeDofs] .+= du[freeDofs]
 
-    work!(assembler, buffer; a=u)
+    work!(assembler, buffer; a=du)
+    update_states!(buffer)
 
     @show norm_r = norm(r[freeDofs])
 
@@ -168,5 +171,6 @@ while true
     apply_zero!(K, r, ch)
     du = Symmetric(K) \ r
     u -= du
+    apply!(u, ch)
 
 end
