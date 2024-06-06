@@ -1,4 +1,7 @@
 
+using Ferrite
+using FerriteAssembly
+
 include("initialize.jl")
 
 # FEM implementation, using Ferrite.jl package
@@ -6,7 +9,7 @@ include("initialize.jl")
 # using FerriteAssembly
 
 # Generate a grid
-N = 2
+N = 1
 L = 10.0
 left = zero(Vec{3})
 right = L * ones(Vec{3})
@@ -17,7 +20,7 @@ ip = Lagrange{RefTetrahedron, 1}()^3
 qr = QuadratureRule{3, RefTetrahedron}(1)
 qr_face = QuadratureRule{2, RefTetrahedron}(1)
 cv = CellValues(qr, ip)
-fv = FaceValues(qr_face, ip)
+fv = FacetValues(qr_face, ip)
 # DofHandler
 dh = DofHandler(grid)
 add!(dh, :u, 3) # Add a displacement field
@@ -26,12 +29,7 @@ close!(dh)
 timestep = 5e-3
 strain_rate = 1e-3
 
-# Base.@kwdef struct ARVEmat{T} 
-
-# end
-
-
-arve_ref = get_ARVE_from_lmp(lmp_ref)
+arve_ref = get_ARVE_from_lmp(lmp)
 
 ARVE_State = Union{Tensor{2,3}, ARVE}
 
@@ -42,29 +40,28 @@ function FerriteAssembly.create_cell_state(::Nothing, cv::CellValues, args...)
     return [cell_state_qp for _ in 1:getnquadpoints(cv)]
 end
 
-
 function FerriteAssembly.element_residual!(re, state, ue, ::Nothing, cv::CellValues, buffer)
     #Δt = FerriteAssembly.get_time_increment(buffer)
     old_states = FerriteAssembly.get_old_state(buffer)
     ndofs = getnbasefunctions(cv)
-    lmp = buffer.user_cache
+    # lmp = buffer.user_cache
     for qp in 1:getnquadpoints(cv)
         old_state = old_states[qp]
         dΩ = getdetJdV(cv, qp)
         ∇u = function_gradient(cv, qp, ue)
         F = one(∇u) + ∇u # F is a Tensor
-        set_ARVE_to_lmp!(lmp, old_state[2])
+        # set_ARVE_to_lmp!(lmp, old_state[2])
         state[qp][2] = apply_C_ARVE!(lmp, old_state[2], F, timestep, strain_rate)
         # σ_voigt, C_voigt = calc_S_C(lmp)
         σ_voigt = get_stress_gpa(lmp)
         σ = fromvoigt(SymmetricTensor{2,3}, σ_voigt)
-        # P = det(F) * σ ⋅ transpose(inv(F))
+        P = det(F) * σ ⋅ transpose(inv(F))
         # Calculation ∂P∂F
         # C = fromvoigt(SymmetricTensor{4,3}, C_voigt)
         # Loop over test function
         for i in 1:ndofs
             δϵ = shape_symmetric_gradient(cv, qp, i)
-            re[i] += (δϵ ⊡ σ) * dΩ
+            re[i] += (δϵ ⊡ P) * dΩ
             # ∇δui∂P∂F = ∇δui ⊡ ∂P∂F
             # for j in 1:ndofs
             #     ∇δuj = shape_gradient(cv, qp, j)
@@ -78,24 +75,24 @@ function FerriteAssembly.element_routine!(ke, re, state, ue, ::Nothing, cv::Cell
     #Δt = FerriteAssembly.get_time_increment(buffer)
     old_states = FerriteAssembly.get_old_state(buffer)
     ndofs = getnbasefunctions(cv)
-    lmp = buffer.user_cache
+    # lmp = buffer.user_cache
     for qp in 1:getnquadpoints(cv)
         old_state = old_states[qp]
         dΩ = getdetJdV(cv, qp)
         ∇u = function_gradient(cv, qp, ue)
         F = one(∇u) + ∇u # F is a Tensor
-        set_ARVE_to_lmp!(lmp, old_state[2])
+        # set_ARVE_to_lmp!(lmp, old_state[2])
         state[qp][2] = apply_C_ARVE!(lmp, old_state[2], F, timestep, strain_rate)
         σ_voigt, C_voigt = calc_S_C(lmp)
         # σ_voigt = get_stress_gpa(lmp_ref)
         σ = fromvoigt(SymmetricTensor{2,3}, σ_voigt)
-        # P = det(F) * σ ⋅ transpose(inv(F))
+        P = det(F) * σ ⋅ transpose(inv(F))
         # Calculation ∂P∂F
         C = fromvoigt(SymmetricTensor{4,3}, C_voigt)
         # Loop over test function
         for i in 1:ndofs
             δϵ = shape_symmetric_gradient(cv, qp, i)
-            re[i] += (δϵ ⊡ σ) * dΩ
+            re[i] += (δϵ ⊡ P) * dΩ
             # ∇δui∂P∂F = ∇δui ⊡ ∂P∂F
             for j in 1:ndofs
                 Δϵ = shape_symmetric_gradient(cv, qp, j)
@@ -110,7 +107,7 @@ u = zeros(ndofs(dh))
 # reAssembler = ReAssembler(r)
 
 # it must be before setup_domainbuffer
-FerriteAssembly.allocate_cell_cache(::Any, ::Any) = lmp_ref
+# FerriteAssembly.allocate_cell_cache(::Any, ::Any) = lmp_ref
 # threading=true causes an error! because of multi-threading in LAMMPS
 buffer = setup_domainbuffer(DomainSpec(dh, nothing, cv); threading=false)
 
@@ -118,21 +115,21 @@ buffer = setup_domainbuffer(DomainSpec(dh, nothing, cv); threading=false)
 # work!(reAssembler, buffer; a=u)
 
 K = create_sparsity_pattern(dh)
-assembler = start_assemble(K, r)
+# assembler = start_assemble(K, r)
  
 ch = ConstraintHandler(dh)
 
-dbc1 = Dirichlet(:u, getfaceset(grid, "left" ), (x,t)->[0.,0.,0.], [1,2,3])
-dbc2 = Dirichlet(:u, getfaceset(grid, "right"), (x,t)->[0.,0.,0.], [1,2,3])
+dbc1 = Dirichlet(:u, getfacetset(grid, "left" ), (x,t)->[0.1*t,0.,0.], [1,2,3])
+# dbc2 = Dirichlet(:u, getfaceset(grid, "right"), (x,t)->[10.,0.,0.], [1,2,3])
 
 add!(ch, dbc1)
-add!(ch, dbc2)
+# add!(ch, dbc2)
 close!(ch)
 
 Ferrite.update!(ch, 0.)
 
-# f = zeros(ndofs(dh))
-# apply!(K, f, ch)
+f = zeros(ndofs(dh))
+apply!(K, f, ch)
 # apply!(u, ch)
 freeDofs = ch.free_dofs
 preDofs = ch.prescribed_dofs
@@ -144,33 +141,40 @@ preDofs = ch.prescribed_dofs
 du = zeros(ndofs(dh))
 
 itr = 0
-# work!(assembler, buffer; a=u)
+# @run work!(assembler, buffer; a=u)
 # @show norm(r[freeDofs])
 
-u0 = zeros(ndofs(dh))
+u_old = zeros(ndofs(dh))
+# t_old = 0
 
-while true 
-    @show itr += 1
+maxIter = 10
+tolerance = 0.5
 
-    if itr > 10
-        break
-    end
-    
-    # du[freeDofs] .= K[preDofs, freeDofs]\r[preDofs]
-    # u[freeDofs] .+= du[freeDofs]
-
-    work!(assembler, buffer; a=du)
-    update_states!(buffer)
-
-    @show norm_r = norm(r[freeDofs])
-
-    if norm_r < 1e-3
-        break
-    end
-
-    apply_zero!(K, r, ch)
-    du = Symmetric(K) \ r
-    u -= du
+for t in 1:10
+    update!(ch, t)
     apply!(u, ch)
-
+    # Update and apply the Neumann boundary conditions
+    # fill!(f, 0)
+    # apply!(f, lh, t)
+    # set_time_increment!(buffer, t-t_old)
+    du .= u .- u_old
+    for i in 1:maxIter
+        # Assemble the system
+        assembler = start_assemble(K, r)
+        work!(assembler, buffer; a=du)
+        # r .-= f
+        # Apply boundary conditions
+        apply_zero!(K, r, ch)
+        # Check convergence
+        norm_r = norm(r)
+        @show t, i, norm_r
+        norm_r < 100*tolerance && break
+        i == maxIter && error("Did not converge")
+        # Solve the linear system and update the dof vector
+        u .-= K\r
+        apply!(u, ch) # Make sure Dirichlet BC are exactly fulfilled
+        du .= u .- u_old
+    end
+    update_states!(buffer)
+    update_grid!(dh, u)
 end

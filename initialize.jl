@@ -1,9 +1,8 @@
 using LAMMPS
 using LinearAlgebra
-using Ferrite
-using FerriteAssembly
 
-lmp_ref = LMP(["-pk","omp", "12", "-sf", "omp", "-screen", "none", "-log", "none"])
+lmp = LMP(["-pk","omp", "12", "-sf", "omp", "-screen", "none", "-log", "none"])
+# lmp = LMP(["-pk","omp", "12", "-sf", "omp", "-log", "none"])
 
 test_str = "
 clear 
@@ -13,7 +12,7 @@ boundary p p p
 atom_style 	atomic
 atom_modify map array sort 0 0
 box tilt large
-read_data ARVE_10_relaxed.data
+read_data relaxedRVE_Rezaei.txt
 #read_restart ARVE_10_relaxed.equil
 pair_style eam/alloy
 pair_coeff * * CuAgAu_Zhou04.eam.alloy Au
@@ -33,15 +32,16 @@ run 100
 #str_restart = "read_restart L=80,DR=1_equilibrium.equil"
 #command(lmp_ref, str_restart)
 
-LAMMPS.API.lammps_commands_string(lmp_ref, test_str)
+LAMMPS.API.lammps_commands_string(lmp, test_str)
 
-command(lmp_ref, "run 1000")
+command(lmp, "run 1000")
 
 # you can see the atoms in Ovito
 # command(lmp_ref, "write_dump all atom ARVE_10_relaxed.atom")
 # command(lmp_ref, "write_data ARVE_10_relaxed.data")
 
 function get_stress(lmp)
+    command(lmp, "run 0")
     Pxx = LAMMPS.API.lammps_get_thermo(lmp, "pxx")
     Pyy = LAMMPS.API.lammps_get_thermo(lmp, "pyy")
     Pzz = LAMMPS.API.lammps_get_thermo(lmp, "pzz")
@@ -51,7 +51,7 @@ function get_stress(lmp)
     return [-Pxx, -Pyy, -Pzz, -Pxy, -Pxz, -Pyz]
 end
 
-get_stress(lmp_ref)*1e-4 # units in GPa
+get_stress(lmp)*1e-4 # units in GPa
 
 struct ARVE_Box
     xlo :: Float64
@@ -71,6 +71,7 @@ struct ARVE
     box :: ARVE_Box # LAMMPS box of ARVE
 end
 
+ARVE(n::Int) = ARVE(zeros(3,n), zeros(3,n), ARVE_Box(0., 0., 0., 0., 0., 0., 0., 0., 0.))
 
 function get_box(lmp::LMP)
     xlo = LAMMPS.API.lammps_get_thermo(lmp, "xlo")
@@ -87,25 +88,29 @@ end
 
 
 function get_ARVE_from_lmp(lmp::LMP)
-    x = extract_atom(lmp, "x")
-    v = extract_atom(lmp, "v")
-    rve_box = get_box(lmp)
-    return ARVE(x, v, rve_box)
+    # x = extract_atom(lmp, "x")
+    # v = extract_atom(lmp, "v")
+    n = LAMMPS.get_natoms(lmp)
+    x = zeros(3, n)
+    v = zeros(3, n)
+    LAMMPS.API.lammps_gather_atoms(lmp, "x", 1, 3, x)
+    LAMMPS.API.lammps_gather_atoms(lmp, "v", 1, 3, v)
+
+    return ARVE(x, v, get_box(lmp))
 end
 
-arve_old = deepcopy(get_ARVE_from_lmp(lmp_ref))
-arve_new = deepcopy(arve_old)
+# arve_old = deepcopy(get_ARVE_from_lmp(lmp))
+# arve_new = deepcopy(arve_old)
 
 function set_ARVE_to_lmp!(lmp::LMP, arve::ARVE)
     command(lmp, "change_box all x final "*string(arve.box.xlo)*" "*
     string(arve.box.xhi)*" y final "*string(arve.box.ylo)*" "*string(arve.box.yhi)*
     " z final "*string(arve.box.zlo)*" "*string(arve.box.zhi)*" xy final "*string(arve.box.xy)*
-    " xz final "*string(arve.box.xz)*" yz final "*string(arve.box.yz))
+    " xz final "*string(arve.box.xz)*" yz final "*string(arve.box.yz)*" units box")
     LAMMPS.API.lammps_scatter_atoms(lmp, "x", 1, 3, arve.x)
     LAMMPS.API.lammps_scatter_atoms(lmp, "v", 1, 3, arve.v)
 end
 
-set_ARVE_to_lmp!(lmp_ref, arve_new)
 
 function apply_C_ARVE!(lmp::LMP, arve::ARVE, F::Tensor{2,3}, timestep, strain_rate)
     C = transpose(F)⋅F
@@ -141,22 +146,26 @@ function apply_C_ARVE!(lmp::LMP, arve::ARVE, F::Tensor{2,3}, timestep, strain_ra
     xhi_new = xlo + lx_new
     yhi_new = ylo + ly_new
     zhi_new = zlo + lz_new
-    command(lmp, "fix fix_deform all deform 1 x final "*string(xlo)*" "*
-        string(xhi_new)*" y final "*string(ylo)*" "*string(yhi_new)*
-        " z final "*string(zlo)*" "*string(zhi_new)*" xy final "*string(xy_new)*
-        " xz final "*string(xz_new)*" yz final "*string(yz_new)*" remap x units box")
     #delta = [lx_new - lx, ly_new - ly, lz_new - lz, xy_new - xy, xz_new - xz, yz_new - yz]
     # num_MD_steps = Int(ceil(maximum(delta) / (epsilon_rate * timestep)))
     num_MD_steps = Int(ceil(maximum(abs.(F - one(Tensor{2,3}))) / (strain_rate * timestep)))
-    command(lmp, "run "*string(num_MD_steps))
+    if num_MD_steps!=0
+        command(lmp, "fix fix_deform all deform 1 x final "*string(xlo)*" "*
+        string(xhi_new)*" y final "*string(ylo)*" "*string(yhi_new)*
+        " z final "*string(zlo)*" "*string(zhi_new)*" xy final "*string(xy_new)*
+        " xz final "*string(xz_new)*" yz final "*string(yz_new)*" remap x units box")
+        command(lmp, "run "*string(num_MD_steps))
+    end
 
-    return deepcopy(get_ARVE_from_lmp(lmp))
+    return get_ARVE_from_lmp(lmp)
 end
 
 function calc_S_C(lmp; eps=1e-5)
 
     S = zeros(6)
     C = zeros(6, 6)
+
+    command(lmp, "run 0")
 
     S[1] = LAMMPS.API.lammps_get_thermo(lmp, "pxx") * 1e-4
     S[2] = LAMMPS.API.lammps_get_thermo(lmp, "pyy") * 1e-4
@@ -254,16 +263,28 @@ end
 
 # F = zeros(3,3)
 # F[1,1] = F[2,2] = F[3,3] = 1
-# F[1,1] = 1 + 1e-1
+# # F[1,1] = 1 + 1e-2
 
 # timestep = 5e-3
 # strain_rate = 1e-3
 
-# # arve_new = apply_C_ARVE!(lmp_ref, arve_old, F, timestep, strain_rate)
+# arve_old = get_ARVE_from_lmp(lmp)
+# set_ARVE_to_lmp!(lmp, arve_old)
 
-# get_stress(lmp_ref)*1e-4
+# arve_new = apply_C_ARVE!(lmp, arve_old, Tensor{2,3}(F), timestep, strain_rate)
 
-# command(lmp_ref, "write_dump all atom dump_tmp.atom")
+# command(lmp, "write_dump all atom dump_tmp.atom")
+
+# S, C = calc_S_C(lmp)
+
+# get_stress(lmp)*1e-4
+
+# set_ARVE_to_lmp!(lmp, arve_new)
+
+# command(lmp, "write_dump all atom dump_tmp2.atom")
+
+# S, C = calc_S_C(lmp)
+
 
 
 # num_increment = 20
@@ -283,7 +304,7 @@ end
 # for inc in 1:num_increment
 #     F = dF * F
 #     push!(strain, F[1,1])
-#     arve_new = apply_C_ARVE!(lmp_ref, arve_old, dF, timestep, strain_rate)
+#     arve_new = apply_C_ARVE!(lmp_ref, arve_old, Tensor{2,3}(dF), timestep, strain_rate)
 #     arve_old = deepcopy(arve_new)
 #     stress = get_stress(lmp_ref)
 #     push!(s11, stress[1])
