@@ -3,9 +3,9 @@ using LinearAlgebra
 
 lmp = LMP(["-pk","omp", "12", "-sf", "omp", "-screen", "none", "-log", "none"])
 # lmp = LMP(["-pk","omp", "12", "-sf", "omp", "-log", "none"])
-
+# timestep = 0.002
 timestep = 0.005
-Tdamp = 10 * timestep;
+Tdamp = 3.0 * timestep;
 
 test_str = "
 clear 
@@ -22,7 +22,7 @@ pair_coeff * * CuAgAu_Zhou04.eam.alloy Au
 thermo_style custom step pxx pyy pzz pxy pxz pyz
 timestep $timestep
 thermo 1000
-variable Temp equal 1
+variable Temp equal 10
 compute stress all stress/atom NULL
 #min_style cg
 #fix fix_boxRelax all box/relax aniso 0.0
@@ -30,7 +30,7 @@ compute stress all stress/atom NULL
 #write_restart L=80,DR=1_equilibrium.equil
 #unfix fix_boxRelax
 fix fix_nvt all nvt temp \${Temp} \${Temp} $Tdamp
-run 100
+run 5000
 "
 
 #str_restart = "read_restart L=80,DR=1_equilibrium.equil"
@@ -38,7 +38,7 @@ run 100
 
 LAMMPS.API.lammps_commands_string(lmp, test_str)
 
-command(lmp, "run 1000")
+# command(lmp, "run 1000")
 
 # you can see the atoms in Ovito
 # command(lmp_ref, "write_dump all atom ARVE_10_relaxed.atom")
@@ -164,7 +164,8 @@ function apply_C_ARVE!(lmp::LMP, arve::ARVE, F::Tensor{2,3}, timestep, strain_ra
     if do_relax
         # command(lmp, "unfix fix_nvt")
         # command(lmp, "fix fix_nve all nve")
-        command(lmp, "run 2000")
+        # command(lmp, "unfix fix_deform")
+        command(lmp, "run 5000")
         # command(lmp, "unfix fix_nve")
         # command(lmp, "fix fix_nvt all nvt temp \${Temp} \${Temp} 1")
     end

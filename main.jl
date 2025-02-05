@@ -21,7 +21,7 @@ grid = generate_grid(Hexahedron, (N, N, 1), left, right)
 
 # 3D Finite element base
 ip = Lagrange{RefShape, 1}()^3
-qr = QuadratureRule{RefShape}(2)
+qr = QuadratureRule{RefShape}(1)
 qr_face = FacetQuadratureRule{RefShape}(1)
 cv = CellValues(qr, ip)
 fv = FacetValues(qr_face, ip)
@@ -33,7 +33,7 @@ close!(dh)
 
 # timestep is defined in "initialize.jl"
 # timestep = 5e-3 
-strain_rate = 5e-2
+strain_rate = 1e-3
 
 arve_ref = get_ARVE_from_lmp(lmp)
 
@@ -95,7 +95,7 @@ function FerriteAssembly.element_routine!(ke, re, state, ue, ::Nothing, cv::Cell
         ∇u = function_gradient(cv, qp, ue)
         F = one(∇u) + ∇u # F is a Tensor
         # set_ARVE_to_lmp!(lmp, old_state[2])
-        state[qp] = apply_C_ARVE!(lmp, old_state, F, timestep, strain_rate; do_relax=true)
+        state[qp] = apply_C_ARVE!(lmp, old_state, F, timestep, strain_rate; do_relax=false)
         σ_voigt, C_voigt = calc_S_C(lmp)
         # σ_voigt = get_stress_gpa(lmp_ref)
         σ = fromvoigt(SymmetricTensor{2,3}, σ_voigt)
@@ -132,8 +132,8 @@ K = allocate_matrix(dh)
  
 ch = ConstraintHandler(dh)
 
-dbc1 = Dirichlet(:u, getfacetset(grid, "left" ), (x,t)->[0.1*t,0.,0.], [1,2,3])
-dbc2 = Dirichlet(:u, getfacetset(grid, "right"), (x,t)->[0.,0.], [1,2])
+dbc1 = Dirichlet(:u, getfacetset(grid, "left" ), (x,t)->[1*t,0.,0.], [1,2,3])
+dbc2 = Dirichlet(:u, getfacetset(grid, "right"), (x,t)->[0.,0., 0.], [1,2,3])
 
 add!(ch, dbc1)
 add!(ch, dbc2)
@@ -199,9 +199,35 @@ tolerance = 0.5
 
     write_stress_atoms(buffer.states.new.vals[1][1], lmp, 1, 1, t)
 
+    # [-Pxx, -Pyy, -Pzz, -Pxy, -Pxz, -Pyz]
+    sxx = zeros(getncells(grid))
+    syy = zeros(getncells(grid))
+    szz = zeros(getncells(grid))
+    sxy = zeros(getncells(grid))
+    sxz = zeros(getncells(grid))
+    syz = zeros(getncells(grid))
+    # stress_values = [zeros(6) for _ in 1:getncells(grid)]
+    stress_values = zeros(6)
+
+    for cell in 1:getncells(grid)
+        set_ARVE_to_lmp!(lmp, buffer.states.new.vals[cell][1])
+        stress_values .= get_stress_gpa(lmp) 
+        sxx[cell] = stress_values[1] 
+        syy[cell] = stress_values[2] 
+        szz[cell] = stress_values[3] 
+        sxy[cell] = stress_values[4] 
+        sxz[cell] = stress_values[5] 
+        syz[cell] = stress_values[6]  
+    end
+
     VTKGridFile("Results/grid_$t", grid) do vtk
         write_solution(vtk, dh, u)
-        # write_cell_data(vtk, celldata)
+        write_cell_data(vtk, sxx, "sxx")
+        write_cell_data(vtk, syy, "syy")
+        write_cell_data(vtk, szz, "szz")
+        write_cell_data(vtk, sxy, "sxy")
+        write_cell_data(vtk, sxz, "sxz")
+        write_cell_data(vtk, syz, "syz")
     end
 
 end
