@@ -33,7 +33,7 @@ close!(dh)
 
 # timestep is defined in "initialize.jl"
 # timestep = 5e-3 
-strain_rate = 1e-3
+strain_rate = 2e-4
 
 arve_ref = get_ARVE_from_lmp(lmp)
 
@@ -132,17 +132,17 @@ K = allocate_matrix(dh)
  
 ch = ConstraintHandler(dh)
 
-dbc1 = Dirichlet(:u, getfacetset(grid, "left" ), (x,t)->[1*t,0.,0.], [1,2,3])
-dbc2 = Dirichlet(:u, getfacetset(grid, "right"), (x,t)->[0.,0., 0.], [1,2,3])
+dbc1 = Dirichlet(:u, getfacetset(grid, "top" ), (x,t)->[0.,0.,-0.5*t], [1,2,3])
+dbc2 = Dirichlet(:u, getfacetset(grid, "bottom"), (x,t)->[0.,0., 0.], [1,2,3])
 
 add!(ch, dbc1)
 add!(ch, dbc2)
 close!(ch)
 
-Ferrite.update!(ch, 0.)
+#Ferrite.update!(ch, 0.)
 
-f = zeros(ndofs(dh))
-apply!(K, f, ch)
+#f = zeros(ndofs(dh))
+#apply!(K, f, ch)
 # apply!(u, ch)
 freeDofs = ch.free_dofs
 preDofs = ch.prescribed_dofs
@@ -152,25 +152,30 @@ preDofs = ch.prescribed_dofs
 # u[freeDofs] .= -K[preDofs, freeDofs]\r[preDofs]
 
 du = zeros(ndofs(dh))
+u_old = zeros(ndofs(dh))
 
 itr = 0
 # @run work!(assembler, buffer; a=u)
 # @show norm(r[freeDofs])
-
-u_old = zeros(ndofs(dh))
 # t_old = 0
 
 maxIter = 10
 tolerance = 0.5
 
-@showprogress for t in 1:10
+@showprogress for t in 1:20
+    
+    Ferrite.update!(ch, t-1)
+    apply!(u_old, ch)
+
     Ferrite.update!(ch, t)
     apply!(u, ch)
+
     # Update and apply the Neumann boundary conditions
     # fill!(f, 0)
     # apply!(f, lh, t)
     # set_time_increment!(buffer, t-t_old)
     du .= u .- u_old
+
     for i in 1:maxIter
         # Assemble the system
         assembler = start_assemble(K, r)
@@ -189,11 +194,10 @@ tolerance = 0.5
         end
         # Solve the linear system and update the dof vector
         du .+= K\r
-        # @show du
     end
-    u .+= du
-    u_old .= u
-    apply!(u, ch) # Make sure Dirichlet BC are exactly fulfilled
+    u .+=  du
+    @show u
+    #apply!(u, ch) # Make sure Dirichlet BC are exactly fulfilled
     update_states!(buffer)
     update_grid!(dh, du)
 
